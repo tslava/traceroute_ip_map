@@ -17,24 +17,25 @@ def geolocate_ip(ip_address):
 def plot_route(ip_addresses):
     m = folium.Map(location=[0, 0], zoom_start=2)  # Create a map
 
+    locations = []
+    steps = 0
     # Plot IP addresses and connect them with routes
-    for i in range(len(ip_addresses) - 1):
-        start_ip = ip_addresses[i]
-        end_ip = ip_addresses[i + 1]
+    for i, ip_address in enumerate(ip_addresses):
+        location = geolocate_ip(ip_address)
+        if location:
+            if location not in locations:
+                steps += 1
+                locations.append(location)
+                lat, lon = location['latitude'], location['longitude']
+                folium.Marker([lat, lon], popup=f"{ip_address}", tooltip=f"Step {steps+1}").add_to(m)
+            else:
+                print(f"Skip location for IP {ip_address}")
 
-        start_location = geolocate_ip(start_ip)
-        end_location = geolocate_ip(end_ip)
-
-        if start_location and end_location:
-            start_lat, start_lon = start_location['latitude'], start_location['longitude']
-            end_lat, end_lon = end_location['latitude'], end_location['longitude']
-
-            # Add markers for start and end points
-            folium.Marker([start_lat, start_lon], popup=start_ip).add_to(m)
-            folium.Marker([end_lat, end_lon], popup=end_ip).add_to(m)
-
-            # Add a line connecting the markers
-            folium.PolyLine([(start_lat, start_lon), (end_lat, end_lon)], color='blue', weight=2.5, opacity=1).add_to(m)
+    # Add lines connecting the markers
+    locations = [geolocate_ip(ip) for ip in ip_addresses]
+    valid_locations = [loc for loc in locations if loc is not None]
+    coordinates = [(loc['latitude'], loc['longitude']) for loc in valid_locations]
+    folium.PolyLine(coordinates, color='blue', weight=2.5, opacity=1).add_to(m)
 
     return m
 
@@ -66,9 +67,11 @@ def get_ip_list(url: str) -> List[str]:
 
         for part in line_parts:
             ip_match = re.match(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", part)
+
             if ip_match:
-                ip_address = part
-                break
+                if part not in ["192.168.1.1", "192.168.0.1"]:
+                    ip_address = part
+                    break
 
         if not ip_address:
             continue
@@ -84,10 +87,7 @@ def get_ip_list(url: str) -> List[str]:
 
 def main(url: str):
     # ip_addresses = get_ip_list(url)
-
     ip_addresses = [
-        "192.168.1.1",
-        "192.168.0.1",
         "84.116.254.69",
         "84.116.253.93",
         "84.116.138.85",
@@ -95,10 +95,13 @@ def main(url: str):
         "194.181.92.97"
     ]
 
+    my_ip = "89.64.104.177"
+    ip_addresses.insert(0, my_ip)
+
     print(f"Found IPs: {json.dumps(ip_addresses, indent=4)}")
 
     map_with_routes = plot_route(ip_addresses)
-    map_with_routes.save(f"map_with_routes_for {url}.html")
+    map_with_routes.save(f"map_with_routes_for_{url}.html")
 
 
 if __name__ == '__main__':
