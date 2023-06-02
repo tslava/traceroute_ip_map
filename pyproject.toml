@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "traceroute-ip-map"
+version = "0.1.0"
+description = ""
+authors = ["vtsiunchik <vtsiunchik@nwave.io>"]
+readme = "README.md"
+packages = [{include = "traceroute_ip_map"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+folium = "^0.14.0"
+maxminddb-geolite2 = "^2018.703"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
