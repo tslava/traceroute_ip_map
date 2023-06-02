@@ -1,3 +1,7 @@
+import json
+import re
+from typing import List
+
 import folium
 from geolite2 import geolite2
 import subprocess
@@ -35,26 +39,67 @@ def plot_route(ip_addresses):
     return m
 
 
-def main(url: str):
+def get_ip_list(url: str) -> List[str]:
     command = f"traceroute -n {url}"
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     ip_addresses = []
+
+    stars_max = 5
+    stars_counter = 0
+
     for line in iter(process.stdout.readline, b''):
         line = line.decode('utf-8').strip()
+
         print(line)  # Print real-time output
 
-        if ' ' in line:
-            line_parts = line.split()
-            ip_address = line_parts[line_parts.index(' ') + 1]
-            ip_addresses.append(ip_address)
+        if "traceroute" in line:
+            continue
+
+        ip_address = None
+        line_parts = line.split()
+
+        if "* * *" in line:
+            stars_counter += 1
+            if stars_counter == stars_max:
+                break
+
+        for part in line_parts:
+            ip_match = re.match(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", part)
+            if ip_match:
+                ip_address = part
+                break
+
+        if not ip_address:
+            continue
+
+        ip_addresses.append(ip_address)
+        stars_counter = 0
 
     process.stdout.close()
     process.wait()
 
+    return ip_addresses
+
+
+def main(url: str):
+    # ip_addresses = get_ip_list(url)
+
+    ip_addresses = [
+        "192.168.1.1",
+        "192.168.0.1",
+        "84.116.254.69",
+        "84.116.253.93",
+        "84.116.138.85",
+        "193.59.202.57",
+        "194.181.92.97"
+    ]
+
+    print(f"Found IPs: {json.dumps(ip_addresses, indent=4)}")
+
     map_with_routes = plot_route(ip_addresses)
-    map_with_routes.save("map_with_routes.html")
+    map_with_routes.save(f"map_with_routes_for {url}.html")
 
 
 if __name__ == '__main__':
-    main('ya.ru')
+    main('gosuslugi.ru')
