@@ -1,10 +1,11 @@
+import argparse
 import json
 import re
+import subprocess
 from typing import List
 
 import folium
 from geolite2 import geolite2
-import subprocess
 
 
 def geolocate_ip(ip_address):
@@ -41,8 +42,11 @@ def plot_route(ip_addresses):
 
 
 def get_ip_list(url: str) -> List[str]:
-    command = f"traceroute -n {url}"
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    process = subprocess.Popen(
+        ['traceroute', '-n', url],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
 
     ip_addresses = []
 
@@ -85,24 +89,33 @@ def get_ip_list(url: str) -> List[str]:
     return ip_addresses
 
 
-def main(url: str):
-    # ip_addresses = get_ip_list(url)
-    ip_addresses = [
-        "84.116.254.69",
-        "84.116.253.93",
-        "84.116.138.85",
-        "193.59.202.57",
-        "194.181.92.97"
-    ]
+def main(url: str, output_path: str = None):
+    ip_addresses = get_ip_list(url)
 
-    my_ip = "89.64.104.177"
-    ip_addresses.insert(0, my_ip)
+    if not ip_addresses:
+        print("No IP addresses found in traceroute")
+        return
 
     print(f"Found IPs: {json.dumps(ip_addresses, indent=4)}")
 
     map_with_routes = plot_route(ip_addresses)
-    map_with_routes.save(f"map_with_routes_for_{url}.html")
+
+    if output_path is None:
+        output_path = f"map_{url.replace('/', '_')}.html"
+
+    map_with_routes.save(output_path)
+    print(f"Map saved to: {output_path}")
 
 
 if __name__ == '__main__':
-    main('gosuslugi.ru')
+    parser = argparse.ArgumentParser(
+        description='Trace route to a domain and visualize the path on an interactive map'
+    )
+    parser.add_argument('domain', help='Domain or IP address to trace')
+    parser.add_argument(
+        '-o', '--output',
+        help='Output HTML file path (default: map_<domain>.html)'
+    )
+    args = parser.parse_args()
+
+    main(args.domain, args.output)
