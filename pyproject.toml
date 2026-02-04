@@ -4,12 +4,12 @@ version = "0.1.0"
 description = ""
 authors = ["vtsiunchik <vtsiunchik@nwave.io>"]
 readme = "README.md"
-packages = [{include = "traceroute_ip_map"}]
+packages = [{include = "main.py"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-folium = "^0.14.0"
-maxminddb-geolite2 = "^2018.703"
+python = "^3.10"
+folium = "^0.20.0"
+geoip2 = "^5.2.0"
 
 
 [build-system]
