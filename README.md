@@ -1,6 +1,13 @@
 # Traceroute IP Map
 
-A Python tool that traces the network route to a domain and visualizes the path on an interactive map.
+**See where your packets actually travel.** One command runs `traceroute` to a domain, geolocates every public hop and writes an interactive map with the route drawn hop by hop.
+
+```bash
+poetry install
+poetry run python main.py example.com -o route.html   # then open route.html
+```
+
+**Stack:** Python · Folium (Leaflet) · ip-api.com · Poetry
 
 ## Features
 
@@ -61,4 +68,8 @@ The generated HTML file can be opened in any web browser to view the interactive
 
 ## License
 
-MIT License
+[MIT](LICENSE)
+
+---
+
+Built by [Wiaczeslaw Cyunczyk](https://cyunczyk.dev)
