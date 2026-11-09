@@ -72,4 +72,4 @@ The generated HTML file can be opened in any web browser to view the interactive
 
 ---
 
-Built by [Wiaczeslaw Cyunczyk](https://cyunczyk.dev)
+Built by [Wiaczeslaw Cyunczyk](https://tslava.dev)
